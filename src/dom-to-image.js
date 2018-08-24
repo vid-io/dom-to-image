@@ -14,6 +14,10 @@
         cacheBust: false
     };
 
+    var getScale = function () {
+        return window.devicePixelRatio || 1;
+    };
+
     var domtoimage = {
         toSvg: toSvg,
         toPng: toPng,
@@ -154,15 +158,22 @@
             .then(util.makeImage)
             .then(util.delay(100))
             .then(function (image) {
+                var scale = getScale();
                 var canvas = newCanvas(domNode);
-                canvas.getContext('2d').drawImage(image, 0, 0);
+                var ctx = canvas.getContext('2d');
+                ctx.mozImageSmoothingEnabled = false;
+                ctx.msImageSmoothingEnabled = false;
+                ctx.imageSmoothingEnabled = false;
+                ctx.scale(scale, scale);
+                ctx.drawImage(image, 0, 0);
                 return canvas;
             });
 
         function newCanvas(domNode) {
+            var scale = getScale();
             var canvas = document.createElement('canvas');
-            canvas.width = options.width || util.width(domNode);
-            canvas.height = options.height || util.height(domNode);
+            canvas.width = (options.width || util.width(domNode)) * scale;
+            canvas.height = (options.height || util.height(domNode)) * scale;
 
             if (options.bgcolor) {
                 var ctx = canvas.getContext('2d');
@@ -554,13 +565,17 @@
         function width(node) {
             var leftBorder = px(node, 'border-left-width');
             var rightBorder = px(node, 'border-right-width');
-            return node.scrollWidth + leftBorder + rightBorder;
+            var leftMargin = px(node, 'margin-left');
+            var rightMargin = px(node, 'margin-right');
+            return node.scrollWidth + leftBorder + rightBorder + leftMargin + rightMargin;
         }
 
         function height(node) {
             var topBorder = px(node, 'border-top-width');
             var bottomBorder = px(node, 'border-bottom-width');
-            return node.scrollHeight + topBorder + bottomBorder;
+            var topMargin = px(node, 'margin-top');
+            var bottomMargin = px(node, 'margin-bottom');
+            return node.scrollHeight + topBorder + bottomBorder + topMargin + bottomMargin;
         }
 
         function px(node, styleProperty) {
