@@ -693,6 +693,8 @@
             }
 
             function getCssRules(styleSheets) {
+                if (navigator.userAgent.includes('Firefox')) return [];
+
                 var cssRules = [];
                 styleSheets.forEach(function (sheet) {
                     try {
